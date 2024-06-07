@@ -9,8 +9,8 @@
 1. **Update the `chat_id` in `server.py`:**
    - Navigate to the `serverside` folder.
    - Open `server.py` and go to line 43.
-   - Send a message to the bot on Telegram [here](https://t.me/SightSensebot).
-   - Visit [this link](https://api.telegram.org/bot7387450528:AAE4XznZMGa43fHU46KmcCoEBG4sSDU_q_o/getUpdates) to get the `chat_id` from the result.
+   - Send a message to the bot on Telegram https://t.me/SightSensebot (make a telegram account first if needed).
+   - Visit https://api.telegram.org/bot7387450528:AAE4XznZMGa43fHU46KmcCoEBG4sSDU_q_o/getUpdates to get the `chat_id` from the result.
    - Replace the `chat_id` in the code with the one you obtained.
 
 ##### Board-related Changes:
