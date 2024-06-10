@@ -1,0 +1,5 @@
+https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg 
+https://pjreddie.com/media/files/yolov3.weights
+https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names
+
+// Make sure to download the files from those links and put them in a folder called "Yolo". Also make sure that the Yolo folder is in the same directory as server.py
