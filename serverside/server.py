@@ -2,34 +2,31 @@
 from flask import Flask, request, jsonify
 import numpy as np
 import cv2
-import tensorflow as tf
 import os
 from datetime import datetime
 import requests
-
-"""
-- Run this in the terminal to actually run the server
-$env:FLASK_APP = "server.py"
-python -m flask run --host=0.0.0.0
-
-- This is something to keep in mind. Basically it shows how we can use YOLOv3 as a better object detection model.
-https://v-iashin.github.io/detector
-"""
+import atexit
+import matplotlib.pyplot as plt
 
 # Initialize Flask app
 app = Flask(__name__)
 
-# Define the path to the saved model
-model_dir = "ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8"
-saved_model_path = os.path.join(model_dir, "saved_model")
+# Define the path to the Yolo model and the necessary files
+yolo_dir = "yolo"
+weights_path = os.path.join(yolo_dir, "yolov3.weights")
+config_path = os.path.join(yolo_dir, "yolov3.cfg")
+label_map_path = os.path.join(yolo_dir, "coco.names")
 
-# Load the pre-trained object detection model (SSD MobileNet V2)
-model = tf.saved_model.load(saved_model_path)
+# Load the pre-trained object detection model
+net = cv2.dnn.readNetFromDarknet(config_path, weights_path)
 
-# Get the labels for the object detection
-label_map_path = "coco.names"
+# Get the labels
 with open(label_map_path, "r") as f:
-    LABELS = {i+1: line.strip() for i, line in enumerate(f.readlines())}
+    LABELS = [line.strip() for line in f.readlines()]
+
+# Initialize counters for detected objects and the unknown objects
+object_counts = {label: 0 for label in LABELS}
+unknown = 0
 
 # Function to send notification to Telegram
 def send_telegram_message(message, photo_path):
@@ -59,10 +56,9 @@ def send_telegram_message(message, photo_path):
 
     response = requests.post(url, data=data, files=files)
 
-    # Close the image file
     photo.close()
 
-    # Check if the message was sent successfully
+    # Check if the message was sent
     if response.status_code == 200:
         print("Notification sent successfully!")
     else:
@@ -71,6 +67,8 @@ def send_telegram_message(message, photo_path):
 # Route to handle image upload
 @app.route("/upload", methods=["POST"])
 def receive_image():
+    global object_counts
+    global unknown
     image_data = request.data
     filename = datetime.now().strftime("%Y%m%d%H%M%S") + ".jpg"
     filepath = os.path.join("images", filename)
@@ -79,37 +77,83 @@ def receive_image():
     with open(filepath, "wb") as f:
         f.write(image_data)
 
-    # Perform object detection
+    # Perform object detection using YOLOv3
     image = cv2.imread(filepath)
-    input_tensor = tf.convert_to_tensor(image)
-    input_tensor = input_tensor[tf.newaxis, ...]
-    detections = model(input_tensor)
+    (H, W) = image.shape[:2]
+    ln = net.getLayerNames()
+    ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
-    # Get detection information
-    detection_scores = detections['detection_scores'][0].numpy()
-    detection_classes = detections['detection_classes'][0].numpy().astype(np.int32)
-    detection_boxes = detections['detection_boxes'][0].numpy()
+    # Construct a blob from the input image and perform a forward pass
+    blob = cv2.dnn.blobFromImage(image, 1 / 255.0, (416, 416), swapRB=True, crop=False)
+    net.setInput(blob)
+    layerOutputs = net.forward(ln)
 
-    results = []
-    for i in range(len(detection_scores)):
-        if detection_scores[i] > 0.5:  # Confidence threshold
-            class_id = detection_classes[i]
-            class_name = LABELS.get(class_id, 'Unknown')
-            class_score = detection_scores[i]
-            class_box = detection_boxes[i].tolist()
-            results.append({
-                'class': class_name,
-                'score': float(class_score),
-                'box': class_box
-            })
+    # Initialize lists
+    boxes = []
+    confidences = []
+    classIDs = []
+
+    # Loop over each of the layer outputs
+    for output in layerOutputs:
+        for detection in output:
+            scores = detection[5:]
+            classID = np.argmax(scores)
+            confidence = scores[classID]
+
+            # Filter out weak detections by ensuring the confidence is greater than a minimum threshold
+            if confidence > 0.5:
+                box = detection[0:4] * np.array([W, H, W, H])
+                (centerX, centerY, width, height) = box.astype("int")
+
+                x = int(centerX - (width / 2))
+                y = int(centerY - (height / 2))
+
+                boxes.append([x, y, int(width), int(height)])
+                confidences.append(float(confidence))
+                classIDs.append(classID)
+
+    # Apply suppression to suppress weak, overlapping bounding boxes
+    idxs = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.3)
+
+    detected_objects = []
+    if len(idxs) > 0:
+        for i in idxs.flatten():
+            label = LABELS[classIDs[i]]
+            object_counts[label] += 1  # Increment counter for detected object
+            detected_objects.append(label)
+    if len(detected_objects) == 0:
+        unknown += 1
 
     # Send a notification to Telegram
     message = "Someone is at the door! Detected objects:"
-    for result in results:
-        message += f"\n{result['class']} - {result['score']}"
+    print(detected_objects)
+    for obj in detected_objects:
+        message += f"\n{obj}"
     send_telegram_message(message, filepath)
 
-    return jsonify(results)
+    return jsonify(detected_objects)
+
+# Function to plot and save the data when the server session ends
+def plot_and_save_data():
+    labels = [label for label, count in object_counts.items() if count > 0]
+    counts = [object_counts[label] for label in labels]
+
+    if unknown > 0:
+        labels.append('Unknown')
+        counts.append(unknown)
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(labels, counts)
+    plt.xlabel('Detected Objects')
+    plt.ylabel('Counts')
+    plt.title('Detected Objects')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.savefig('detected_objects_plot.png')
+    plt.close()
+
+# Register the function to be called when the server session ends
+atexit.register(plot_and_save_data)
 
 if __name__ == "__main__":
     if not os.path.exists("images"):
