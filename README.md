@@ -44,3 +44,4 @@
 ### Notes
 - Make sure you have all necessary dependencies installed for both the server and the board.
 - Check your network settings to ensure the board can communicate with the server.
+- Its important to note that we only left the bot token and other sensitive information since its for the final project and nothing of value is really lost from this Telegram bot. In a real world setting, we defintely WOULD NOT leave important information in the code like that.
