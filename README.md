@@ -3,7 +3,13 @@
    ### Note: 
    - I am currently planning to do a v2 or revamp of sorts. Upon revision there were some issues with design choice and even more from a walk-through perspective. TLDR in hindsight im not proud of this but at least there something to fix rather than nothing.
    - To Any recruiter/employer reading this, I hope you keep this in mind and extend some grace. If you see something that looks wrong, improper, or incorrect; trust me I know lol. I'm doing a different project in parallel to this so it may be a slow burn here.
-   - Biggest thing I want to refactor is the replicability. The telegram API, the hardware, and server choice are the main culprits. 
+   - Biggest thing I want to refactor is the replicability. The telegram API, the hardware, and server choice are the main culprits.
+      - The telegram bot isn't working because I put the API key and deleted it. Now I want to make so it's a more distributed system and where I use environment variables instead of just plugging in the API key because I was running out of time on my final project (yikes).
+      - Second thing is the hardware. I don't really remember which LilyGo T Display ESP32 board i used, so I want to hone in on which board I will use and research which other boards can probably work here.
+      - Third is the server choice. When I ran this I used an E2C AWS running on Ubuntu, but I want to see if it can work in other ways, say a raspberry pi server or another machine running the py script, etc.
+      - AI has changed over the past 1-2 years so I want to update the object detection model. It ran OK, but I feel like it can be better now.
+
+
 ### Setup Instructions
 
 #### 1. Modify Code for Your Machine
