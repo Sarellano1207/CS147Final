@@ -8,6 +8,7 @@
       - Second thing is the hardware. I don't really remember which LilyGo T Display ESP32 board i used, so I want to hone in on which board I will use and research which other boards can probably work here.
       - Third is the server choice. When I ran this I used an E2C AWS running on Ubuntu, but I want to see if it can work in other ways, say a raspberry pi server or another machine running the py script, etc.
       - AI has changed over the past 1-2 years so I want to update the object detection model. It ran OK, but I feel like it can be better now.
+      - Will probably add a cmake file too. I've come to learn and appreciate cmake and can see this helping, especially when working with a bunch of different libraries and OSs. 
 
 
 ### Setup Instructions
