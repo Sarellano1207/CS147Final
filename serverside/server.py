@@ -31,13 +31,13 @@ unknown = 0
 # Function to send notification to Telegram
 def send_telegram_message(message, photo_path):
     # Bot token ID received from BotFather on Telegram
-    bot_token = "7387450528:AAE4XznZMGa43fHU46KmcCoEBG4sSDU_q_o"
+    bot_token = "Replace With Your Token"
 
     """ 
     IMPORTANT: Change this chat id with yours here or else you won't get notifications from Telegram
     """
     # Replace <YOUR_CHAT_ID> with your actual chat ID
-    chat_id = "5027083991"
+    chat_id = "Replace with your chat id"
 
     # Set up the URL
     url = f"https://api.telegram.org/bot{bot_token}/sendPhoto"
