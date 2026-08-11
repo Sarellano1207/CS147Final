@@ -1,7 +1,7 @@
 # CS147Final
 ## A Smart Doorbell Prototype
    ### Note: 
-   - I am currently planning to do a v2 or revamp of sorts. Upon revision there were some issues with design choice and even more from a walk-through perspective. TLDR in hindsight im not proud of this but at least there something to fix rather than nothing.
+   - I am currently planning to do a v2 or revamp of sorts. Upon revision there were some issues with design choice and even more from a walk-through perspective. TLDR in hindsight I'm not proud of this but at least there's something to fix rather than nothing.
    - To Any recruiter/employer reading this, I hope you keep this in mind and extend some grace. If you see something that looks wrong, improper, or incorrect; trust me I know lol. I'm doing a different project in parallel to this so it may be a slow burn here.
    - Biggest thing I want to refactor is the replicability. The telegram API, the hardware, and server choice are the main culprits.
       - The telegram bot isn't working because I put the API key and deleted it. Now I want to make so it's a more distributed system and where I use environment variables instead of just plugging in the API key because I was running out of time on my final project (yikes).
