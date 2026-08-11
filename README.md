@@ -44,3 +44,4 @@
 ### Notes
 - Make sure you have all necessary dependencies installed for both the server and the board.
 - Check your network settings to ensure the board can communicate with the server.
+- Will update with a hardware list, but for now a LilyGO T-Display ESP32 and a OV2640/ArduCAM 2MP
